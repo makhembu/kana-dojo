@@ -38,6 +38,7 @@ const DojoMenu = () => {
               addKanaGroupIndices(indices);
             }}
             className='px-2 py-3'
+            borderBottomThickness={8}
           >
             <MousePointer />
             Select All Kana

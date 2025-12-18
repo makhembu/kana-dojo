@@ -93,6 +93,17 @@ const GameModes = ({
   const { kanaGroupNamesFull, kanaGroupNamesCompact } = useMemo(() => {
     const selected = new Set(kanaGroupIndices);
 
+    // Parent group definitions (for "All Hiragana", "All Katakana", "All Challenge")
+    const parentGroupDefs: Array<{
+      label: string;
+      start: number;
+      end: number;
+    }> = [
+      { label: 'All Hiragana', start: 0, end: 26 },
+      { label: 'All Katakana', start: 26, end: 60 },
+      { label: 'All Challenge', start: 60, end: 69 }
+    ];
+
     const subgroupDefs: Array<{
       label: string;
       start: number;
@@ -145,8 +156,50 @@ const GameModes = ({
       nonChallengeIndices.forEach(i => covered.add(i));
     }
 
+    // Check parent groups first (All Hiragana, All Katakana, All Challenge)
+    parentGroupDefs.forEach(parentDef => {
+      // Skip if already covered by "all kana" and not a challenge group
+      if (allNonChallengeSelected && parentDef.label !== 'All Challenge')
+        return;
+
+      // Check if all indices in this parent group are already covered
+      let allCovered = true;
+      for (let i = parentDef.start; i < parentDef.end; i++) {
+        if (!covered.has(i)) {
+          allCovered = false;
+          break;
+        }
+      }
+      if (allCovered) return;
+
+      // Check if all indices in this parent group are selected
+      let allInRange = true;
+      for (let i = parentDef.start; i < parentDef.end; i++) {
+        if (!selected.has(i)) {
+          allInRange = false;
+          break;
+        }
+      }
+
+      if (!allInRange) return;
+
+      // All selected - add parent group label and mark as covered
+      full.push(parentDef.label);
+      compact.push(parentDef.label);
+      for (let i = parentDef.start; i < parentDef.end; i++) covered.add(i);
+    });
+
+    // Then check individual subgroups for partial selections
     subgroupDefs.forEach(def => {
-      if (allNonChallengeSelected && !def.isChallenge) return;
+      // Skip if covered by "all kana" or parent group
+      let allCovered = true;
+      for (let i = def.start; i < def.end; i++) {
+        if (!covered.has(i)) {
+          allCovered = false;
+          break;
+        }
+      }
+      if (allCovered) return;
 
       let allInRange = true;
       for (let i = def.start; i < def.end; i++) {
@@ -269,10 +322,10 @@ const GameModes = ({
 
   return (
     <div className='fixed inset-0 z-[70] bg-[var(--background-color)]'>
-      <div className='min-h-[100dvh] flex flex-col items-center justify-center p-4'>
-        <div className='max-w-lg w-full space-y-4'>
+      <div className='flex min-h-[100dvh] flex-col items-center justify-center p-4'>
+        <div className='w-full max-w-lg space-y-4'>
           {/* Header */}
-          <div className='text-center space-y-3'>
+          <div className='space-y-3 text-center'>
             <Play size={56} className='mx-auto text-[var(--main-color)]' />
             <h1 className='text-2xl font-bold text-[var(--secondary-color)]'>
               {dojoLabel} {mode === 'blitz' ? 'Blitz' : 'Training'}
@@ -305,17 +358,17 @@ const GameModes = ({
                     setSelectedGameMode(mode.id);
                   }}
                   className={clsx(
-                    'w-full p-5 rounded-xl text-left hover:cursor-pointer',
-                    'border-2 flex items-center gap-4 bg-[var(--card-color)]',
+                    'w-full rounded-xl p-5 text-left hover:cursor-pointer',
+                    'flex items-center gap-4 border-2 bg-[var(--card-color)]',
                     isSelected
-                      ? 'border-[var(--main-color)] '
-                      : 'border-[var(--border-color)]  '
+                      ? 'border-[var(--main-color)]'
+                      : 'border-[var(--border-color)]'
                   )}
                 >
                   {/* Icon */}
                   <div
                     className={clsx(
-                      'w-12 h-12 rounded-xl flex items-center justify-center shrink-0',
+                      'flex h-12 w-12 shrink-0 items-center justify-center rounded-xl',
                       isSelected
                         ? 'bg-[var(--main-color)] text-[var(--background-color)]'
                         : 'bg-[var(--border-color)] text-[var(--muted-color)]'
@@ -325,7 +378,7 @@ const GameModes = ({
                   </div>
 
                   {/* Content */}
-                  <div className='flex-1 min-w-0'>
+                  <div className='min-w-0 flex-1'>
                     <h3
                       className={clsx(
                         'text-lg font-medium',
@@ -334,7 +387,7 @@ const GameModes = ({
                     >
                       {mode.title}
                     </h3>
-                    <p className='text-sm text-[var(--secondary-color)] mt-0.5'>
+                    <p className='mt-0.5 text-sm text-[var(--secondary-color)]'>
                       {mode.description}
                     </p>
                   </div>
@@ -342,7 +395,7 @@ const GameModes = ({
                   {/* Selection indicator */}
                   <div
                     className={clsx(
-                      'w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center',
+                      'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2',
                       isSelected
                         ? 'border-[var(--secondary-color)] bg-[var(--secondary-color)]'
                         : 'border-[var(--border-color)]'
@@ -350,7 +403,7 @@ const GameModes = ({
                   >
                     {isSelected && (
                       <svg
-                        className='w-3 h-3 text-[var(--background-color)]'
+                        className='h-3 w-3 text-[var(--background-color)]'
                         fill='none'
                         viewBox='0 0 24 24'
                         stroke='currentColor'
@@ -370,11 +423,11 @@ const GameModes = ({
           </div>
 
           {mode === 'blitz' && (
-            <div className='bg-[var(--card-color)] rounded-lg p-4 space-y-3'>
+            <div className='space-y-3 rounded-lg bg-[var(--card-color)] p-4'>
               <p className='text-sm font-medium text-[var(--secondary-color)]'>
                 Duration:
               </p>
-              <div className='flex gap-2 justify-center flex-wrap'>
+              <div className='flex flex-wrap justify-center gap-2'>
                 {DURATION_OPTIONS.map(duration => (
                   <ActionButton
                     key={duration}
@@ -392,7 +445,7 @@ const GameModes = ({
                     borderBottomThickness={6}
                     borderRadius='2xl'
                     className={clsx(
-                      'px-4 py-2 w-auto ',
+                      'w-auto px-4 py-2',
                       challengeDuration !== duration && 'opacity-60'
                     )}
                   >
@@ -404,10 +457,10 @@ const GameModes = ({
           )}
 
           {/* Action Buttons */}
-          <div className='flex flex-row items-center justify-center gap-2 md:gap-4 w-full max-w-4xl mx-auto'>
+          <div className='mx-auto flex w-full max-w-4xl flex-row items-center justify-center gap-2 md:gap-4'>
             <button
               className={clsx(
-                'w-1/2 h-12 px-2 sm:px-6 flex flex-row justify-center items-center gap-2',
+                'flex h-12 w-1/2 flex-row items-center justify-center gap-2 px-2 sm:px-6',
                 'bg-[var(--secondary-color)] text-[var(--background-color)]',
                 'rounded-2xl transition-colors duration-200',
                 'border-b-6 border-[var(--secondary-color-accent)] shadow-sm',
@@ -444,13 +497,13 @@ const GameModes = ({
               <button
                 disabled={!selectedGameMode}
                 className={clsx(
-                  'w-full h-12 px-2 sm:px-6 flex flex-row justify-center items-center gap-2',
+                  'flex h-12 w-full flex-row items-center justify-center gap-2 px-2 sm:px-6',
                   'rounded-2xl transition-colors duration-200',
-                  'font-medium border-b-6 shadow-sm',
+                  'border-b-6 font-medium shadow-sm',
                   'hover:cursor-pointer',
                   selectedGameMode
-                    ? 'bg-[var(--main-color)] text-[var(--background-color)] border-[var(--main-color-accent)]'
-                    : 'bg-[var(--card-color)] text-[var(--border-color)] cursor-not-allowed'
+                    ? 'border-[var(--main-color-accent)] bg-[var(--main-color)] text-[var(--background-color)]'
+                    : 'cursor-not-allowed bg-[var(--card-color)] text-[var(--border-color)]'
                 )}
               >
                 <span className='whitespace-nowrap'>
@@ -509,21 +562,21 @@ function SelectedLevelsCard({
   };
 
   return (
-    <div className='bg-[var(--card-color)] rounded-lg p-4'>
+    <div className='rounded-lg bg-[var(--card-color)] p-4'>
       <div className='flex flex-col gap-2'>
         <div className='flex flex-row items-center gap-2'>
           <CheckCircle2
-            className='text-[var(--secondary-color)] shrink-0'
+            className='shrink-0 text-[var(--secondary-color)]'
             size={20}
           />
           <span className='text-sm'>
             {isKana ? 'Selected Groups:' : 'Selected Levels:'}
           </span>
         </div>
-        <span className='text-[var(--secondary-color)] text-sm break-words md:hidden'>
+        <span className='text-sm break-words text-[var(--secondary-color)] md:hidden'>
           {formatCompact()}
         </span>
-        <span className='text-[var(--secondary-color)] text-sm break-words hidden md:inline'>
+        <span className='hidden text-sm break-words text-[var(--secondary-color)] md:inline'>
           {formatFull()}
         </span>
       </div>

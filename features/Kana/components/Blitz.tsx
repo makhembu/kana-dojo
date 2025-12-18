@@ -24,6 +24,17 @@ export default function BlitzKana() {
   const selectedKanaGroups = React.useMemo(() => {
     const selected = new Set(kanaGroupIndices);
 
+    // Parent group definitions (for "All Hiragana", "All Katakana", "All Challenge")
+    const parentGroupDefs: Array<{
+      label: string;
+      start: number;
+      end: number;
+    }> = [
+      { label: 'All Hiragana', start: 0, end: 26 },
+      { label: 'All Katakana', start: 26, end: 60 },
+      { label: 'All Challenge', start: 60, end: 69 }
+    ];
+
     const subgroupDefs: Array<{
       label: string;
       start: number;
@@ -73,8 +84,49 @@ export default function BlitzKana() {
       nonChallengeIndices.forEach(i => covered.add(i));
     }
 
+    // Check parent groups first (All Hiragana, All Katakana, All Challenge)
+    parentGroupDefs.forEach(parentDef => {
+      // Skip if already covered by "all kana" and not a challenge group
+      if (allNonChallengeSelected && parentDef.label !== 'All Challenge')
+        return;
+
+      // Check if all indices in this parent group are already covered
+      let allCovered = true;
+      for (let i = parentDef.start; i < parentDef.end; i++) {
+        if (!covered.has(i)) {
+          allCovered = false;
+          break;
+        }
+      }
+      if (allCovered) return;
+
+      // Check if all indices in this parent group are selected
+      let allInRange = true;
+      for (let i = parentDef.start; i < parentDef.end; i++) {
+        if (!selected.has(i)) {
+          allInRange = false;
+          break;
+        }
+      }
+
+      if (!allInRange) return;
+
+      // All selected - add parent group label and mark as covered
+      labels.push(parentDef.label);
+      for (let i = parentDef.start; i < parentDef.end; i++) covered.add(i);
+    });
+
+    // Then check individual subgroups for partial selections
     subgroupDefs.forEach(def => {
-      if (allNonChallengeSelected && !def.isChallenge) return;
+      // Skip if covered by "all kana" or parent group
+      let allCovered = true;
+      for (let i = def.start; i < def.end; i++) {
+        if (!covered.has(i)) {
+          allCovered = false;
+          break;
+        }
+      }
+      if (allCovered) return;
 
       let allInRange = true;
       for (let i = def.start; i < def.end; i++) {
