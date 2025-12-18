@@ -12,7 +12,7 @@ import {
   MousePointerClick,
   Keyboard
 } from 'lucide-react';
-import { buttonBorderStyles, cardBorderStyles } from '@/shared/lib/styles';
+import { buttonBorderStyles } from '@/shared/lib/styles';
 import {
   DIFFICULTY_CONFIG,
   type GauntletDifficulty,
@@ -113,8 +113,8 @@ export default function ActiveGame<T>({
   items,
   lastAnswerCorrect: _lastAnswerCorrect,
   currentStreak,
-  correctSinceLastRegen,
-  regenThreshold,
+  correctSinceLastRegen: _correctSinceLastRegen,
+  regenThreshold: _regenThreshold,
   correctAnswers,
   wrongAnswers,
   onCancel
@@ -123,7 +123,6 @@ export default function ActiveGame<T>({
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const progressPercent = Math.round((currentIndex / totalQuestions) * 100);
-  const canRegenerate = DIFFICULTY_CONFIG[difficulty].regenerates;
 
   // Focus input for Type mode
   useEffect(() => {
@@ -232,29 +231,6 @@ export default function ActiveGame<T>({
             <StatItem icon={Flame} value={currentStreak} />
           </div>
         </div>
-
-        {/* Life Regen Progress (Normal mode only) */}
-        {canRegenerate && lives < maxLives && (
-          <div
-            className={clsx(
-              'mt-2 flex items-center gap-2 rounded-lg p-2',
-              cardBorderStyles
-            )}
-          >
-            <Heart size={14} className='text-[var(--main-color)]' />
-            <div className='h-1.5 flex-1 overflow-hidden rounded-full bg-[var(--card-color)]'>
-              <div
-                className='h-full bg-[var(--main-color)] transition-all duration-300'
-                style={{
-                  width: `${(correctSinceLastRegen / regenThreshold) * 100}%`
-                }}
-              />
-            </div>
-            <span className='text-xs text-[var(--muted-color)]'>
-              +1 in {regenThreshold - correctSinceLastRegen}
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Main game area - centered with proper spacing */}
