@@ -127,6 +127,7 @@ const Subset = ({ sliceRange, subgroup }: SubsetProps) => {
             e.currentTarget.blur();
             selectAllInSubset();
           }}
+          borderRadius='3xl'
           borderBottomThickness={8}
         >
           <span>select all {subgroup.slice(1).toLowerCase()}</span>

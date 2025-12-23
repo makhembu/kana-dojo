@@ -142,7 +142,7 @@ export default function PreGameScreen({
                   <h3 className='text-sm font-medium text-[var(--main-color)]'>
                     Difficulty
                   </h3>
-                  <div className='flex w-full justify-center gap-2 rounded-2xl border-1 border-[var(--border-color)] bg-[var(--card-color)] p-2'>
+                  <div className='flex w-full justify-center gap-2 rounded-3xl border-1 border-[var(--border-color)] bg-[var(--card-color)] p-2'>
                     {(
                       Object.entries(DIFFICULTY_CONFIG) as [
                         GauntletDifficulty,
@@ -157,7 +157,7 @@ export default function PreGameScreen({
                           colorScheme={isSelected ? 'main' : undefined}
                           borderColorScheme={isSelected ? 'main' : undefined}
                           borderBottomThickness={isSelected ? 8 : 0}
-                          borderRadius='2xl'
+                          borderRadius='3xl'
                           className={clsx(
                             'flex-1 gap-1.5 px-4 py-2.5 text-sm',
                             !isSelected &&
