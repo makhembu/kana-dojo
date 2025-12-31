@@ -1,7 +1,7 @@
 'use client';
 import { useCallback } from 'react';
 import { Random } from 'random-js';
-import usePreferencesStore from '@/features/Preferences/store/usePreferencesStore';
+import { useAudioPreferences } from '@/features/Preferences/facade';
 
 const random = new Random();
 
@@ -222,7 +222,7 @@ export const preloadGameSounds = async (): Promise<void> => {
 // =============================================================================
 
 export const useClick = () => {
-  const silentMode = usePreferencesStore(state => state.silentMode);
+  const { silentMode } = useAudioPreferences();
 
   const playClick = useCallback(() => {
     if (silentMode) return;
@@ -237,7 +237,7 @@ export const useClick = () => {
 };
 
 export const useCorrect = () => {
-  const silentMode = usePreferencesStore(state => state.silentMode);
+  const { silentMode } = useAudioPreferences();
 
   const playCorrect = useCallback(() => {
     if (silentMode) return;
@@ -248,7 +248,7 @@ export const useCorrect = () => {
 };
 
 export const useError = () => {
-  const silentMode = usePreferencesStore(state => state.silentMode);
+  const { silentMode } = useAudioPreferences();
 
   const playError = useCallback(() => {
     if (silentMode) return;
@@ -272,7 +272,7 @@ export const useError = () => {
 };
 
 export const useLong = () => {
-  const silentMode = usePreferencesStore(state => state.silentMode);
+  const { silentMode } = useAudioPreferences();
 
   const playLong = useCallback(() => {
     if (silentMode) return;

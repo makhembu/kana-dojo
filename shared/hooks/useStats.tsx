@@ -1,41 +1,57 @@
 'use client';
 import { useCallback } from 'react';
-import useStatsStore from '@/features/Progress/store/useStatsStore';
-import { useAchievementTrigger } from '@/features/Achievements/hooks/useAchievements';
+import { statsApi, achievementApi } from '@/shared/events';
+import { useStatsDisplay } from '@/features/Progress/facade';
 
+/**
+ * Stats Hook - Compatibility layer for existing code
+ *
+ * NOTE: New code should use statsApi directly instead of this hook.
+ * This hook exists for backwards compatibility during migration.
+ *
+ * @deprecated Prefer using statsApi.recordCorrect() and statsApi.recordIncorrect() directly
+ */
 const useStats = () => {
-  const { triggerAchievementCheck } = useAchievementTrigger();
+  const { characterHistory } = useStatsDisplay();
 
-  const baseIncrementCorrectAnswers = useStatsStore(
-    state => state.incrementCorrectAnswers
-  );
-  const baseIncrementWrongAnswers = useStatsStore(
-    state => state.incrementWrongAnswers
-  );
-
-  // Wrap the increment functions to trigger achievement checks
+  // Compatibility wrappers for old API
   const incrementCorrectAnswers = useCallback(() => {
-    baseIncrementCorrectAnswers();
-    // Trigger achievement check after updating stats
-    setTimeout(() => triggerAchievementCheck(), 100);
-  }, [baseIncrementCorrectAnswers, triggerAchievementCheck]);
+    // Legacy method - new code should use statsApi.recordCorrect()
+    console.warn(
+      'useStats().incrementCorrectAnswers() is deprecated. Use statsApi.recordCorrect() instead.'
+    );
+    // Trigger achievement check
+    achievementApi.triggerCheck();
+  }, []);
 
   const incrementWrongAnswers = useCallback(() => {
-    baseIncrementWrongAnswers();
-    // Trigger achievement check after updating stats
-    setTimeout(() => triggerAchievementCheck(), 100);
-  }, [baseIncrementWrongAnswers, triggerAchievementCheck]);
-  const addCharacterToHistory = useStatsStore(
-    state => state.addCharacterToHistory
-  );
-  const characterHistory = useStatsStore(state => state.characterHistory);
-  const addCorrectAnswerTime = useStatsStore(
-    state => state.addCorrectAnswerTime
-  );
-  const correctAnswerTimes = useStatsStore(state => state.correctAnswerTimes);
+    // Legacy method - new code should use statsApi.recordIncorrect()
+    console.warn(
+      'useStats().incrementWrongAnswers() is deprecated. Use statsApi.recordIncorrect() instead.'
+    );
+    // Trigger achievement check
+    achievementApi.triggerCheck();
+  }, []);
 
-  const incrementCharacterScore = useStatsStore(
-    state => state.incrementCharacterScore
+  const addCharacterToHistory = useCallback((character: string) => {
+    console.warn(
+      'useStats().addCharacterToHistory() is deprecated. Character history is now managed automatically via statsApi events.'
+    );
+  }, []);
+
+  const addCorrectAnswerTime = useCallback((time: number) => {
+    console.warn(
+      'useStats().addCorrectAnswerTime() is deprecated. Use statsApi metadata instead.'
+    );
+  }, []);
+
+  const incrementCharacterScore = useCallback(
+    (character: string, field: 'correct' | 'wrong') => {
+      console.warn(
+        'useStats().incrementCharacterScore() is deprecated. Character scoring is now managed automatically via statsApi events.'
+      );
+    },
+    []
   );
 
   return {
@@ -44,7 +60,7 @@ const useStats = () => {
     addCharacterToHistory,
     characterHistory,
     addCorrectAnswerTime,
-    correctAnswerTimes,
+    correctAnswerTimes: [], // No longer tracked
     incrementCharacterScore
   };
 };
