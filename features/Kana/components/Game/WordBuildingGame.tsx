@@ -445,11 +445,11 @@ const WordBuildingGame = ({
           'w-[100vw]',
           'border-t-2 border-[var(--border-color)] bg-[var(--card-color)]',
           'absolute bottom-0 z-10 px-4 py-6 md:bottom-6 md:px-12 md:py-10',
-          'flex flex-row items-center justify-between overflow-hidden'
+          'grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-6 md:gap-12'
         )}
       >
-        {/* Left Column: Feedback (flex-1) */}
-        <div className='flex flex-1 items-center justify-end pr-3 sm:pr-6 md:pr-12'>
+        {/* Left Column: Feedback (flex-1 effectively via grid) */}
+        <div className='flex justify-end overflow-hidden'>
           <div
             className={clsx(
               'flex items-center gap-3 transition-all duration-500 md:gap-4',
@@ -483,8 +483,8 @@ const WordBuildingGame = ({
           </div>
         </div>
 
-        {/* Center Column: Button (flex-none) */}
-        <div className='flex-none'>
+        {/* Center Column: Button */}
+        <div className='flex justify-center'>
           <ActionButton
             ref={buttonRef}
             borderBottomThickness={12}
@@ -497,8 +497,22 @@ const WordBuildingGame = ({
           </ActionButton>
         </div>
 
-        {/* Right Column: Balanced Spacer (flex-1) */}
-        <div className='flex-1' />
+        {/* Right Column: Symmetric Mirror - invisible but balances the visual weight */}
+        <div className='invisible flex justify-start' aria-hidden='true'>
+          <div className='flex items-center gap-3 md:gap-4'>
+            <CircleCheck className='h-10 w-10 sm:h-12 sm:w-12' />
+            <div className='flex flex-col'>
+              <span className='text-lg font-bold sm:text-2xl'>
+                {bottomBarState === 'correct'
+                  ? 'Nicely done!'
+                  : 'Correct solution:'}
+              </span>
+              <span className='text-sm font-medium sm:text-lg'>
+                {wordData.answerChars.join('')}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Spacer */}
